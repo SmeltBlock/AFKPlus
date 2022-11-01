@@ -48,6 +48,10 @@ public class AFKPlusPlayer {
     private boolean isFakeAFK;
     private boolean isInactive;
     private boolean isWarned;
+    /**
+     * This value tracks if a player has been teleported so that they don't get constantly teleported
+     */
+    private boolean isActioned;
 
     /**
      * @param plugin The plugin instance for config and permissions access
@@ -193,6 +197,8 @@ public class AFKPlusPlayer {
         afkStart = System.currentTimeMillis();
         //Set the player as AFK
         isAFK = true;
+        //Reset actioned
+        isActioned = false;
         //Update the players AFK status with the essentials plugin
         updateEssentialsAFKState();
         //Set if the player should be ignored for sleeping
@@ -241,6 +247,8 @@ public class AFKPlusPlayer {
             recordTimeStatistic();
         //Reset warning
         isWarned = false;
+        //Reset actioned
+        isActioned = false;
         //Set player as no longer AFK
         isAFK = false;
         isFakeAFK = false;
@@ -302,8 +310,10 @@ public class AFKPlusPlayer {
         AFKActionEvent event = new AFKActionEvent(this, command);
         Bukkit.getPluginManager().callEvent(event);
         if (!event.isCancelled()) {
-            forceStopAFK();
+            //forceStopAFK();
+            //^ commented to allow teleporting for action
             runCommand(event.getCommand());
+            isActioned = true;
         }
     }
 
@@ -477,7 +487,8 @@ public class AFKPlusPlayer {
                     //Check if the player can have an action taken
                     if (!timeToAction.equals(-1)) {
                         //Check for action and if we are taking action yet
-                        if (secondsSinceAFKStart >= timeToAction && isAtPlayerRequirement) {
+                        //Check that the player hasn't already been teleported
+                        if (secondsSinceAFKStart >= timeToAction && isAtPlayerRequirement && !isActioned) {
                             Bukkit.getScheduler().runTask(plugin, this::takeAction);
                         }
                     }
