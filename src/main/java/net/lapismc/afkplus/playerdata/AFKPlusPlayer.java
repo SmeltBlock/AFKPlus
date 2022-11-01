@@ -228,7 +228,8 @@ public class AFKPlusPlayer {
         if (event.isCancelled()) {
             return;
         }
-        runCommand(event.getCommand());
+        if (isActioned)
+            runCommand(event.getCommand());
         //Get a string that is the user-friendly version of how long the player was AFK
         //This will replace the {TIME} variable, if present
         String afkTime = plugin.prettyTime.formatDuration(plugin.reduceDurationList
